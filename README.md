@@ -73,3 +73,11 @@ User preferences (last folder, meeting name, photographer, format, quality) are 
 ## Licence
 
 MIT — see [LICENSE](LICENSE).
+
+## Provenance
+
+> **100% Prime AI Slop** 🍋
+>
+> This tool — every line of code, every comment, and every doc — was written entirely by [Claude](https://claude.ai) (Anthropic). The design decisions were the human's: what the tool needed to do, the output format, the credits file structure, when to stop adding features, and the name. The human's other contributions were knowing what they wanted, asking good questions, and the occasional "that's rubbish, try again."
+>
+> No code was written by hand. No docs were written by hand. Vibe coding is real, it works, and this is what it looks like when you don't pretend otherwise. If you find a bug, Claude probably wrote it. If you like it, the human probably decided it should exist.
