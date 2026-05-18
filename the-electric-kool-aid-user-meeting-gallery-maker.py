@@ -1,30 +1,19 @@
-"""\nThe Electric Kool-Aid User Meeting Gallery Maker  (v2.1)
+"""
+The Electric Kool-Aid User Meeting Gallery Maker  (v2.6)
 =========================================================
 
 Crops, resizes and compresses up to 20 meeting photos to 1080x1080 px,
-then writes an image-credits.txt with photographer credits and optional
+then writes an image-credits.txt with photographer credits.
 
 Usage:
     py the-electric-kool-aid-user-meeting-gallery-maker.py
 
-Requires Python 3.12+.  Only hard dependency beyond stdlib is Pillow.
-The anthropic package is optional (needed only for alt-text generation).
+Requires Python 3.12 or 3.13.  Only hard dependency beyond stdlib is Pillow.
 
-v1.5 changes:
-  - Wider window (1200px), 7-column grid — all 20 images visible at once.
-  - Drag-and-drop card reordering within the grid.
-  - Per-image quality override dialog when a processed image exceeds the
-    warning size threshold.
-
-v1.4 changes:
-  - Crop result now delivered via callback before popup.destroy(), so the
-    value is never lost to Tkinter widget teardown.
-  - Re-opening the crop popup restores the previous crop position.
-  - Card thumbnail updates to show the cropped area with a green border.
-
-v1.2 fixes:
-  - Images copied into memory on load; file handles released immediately.
-  - WebP output converts RGBA -> RGB (fixes Errno 22 on Windows).
+v2.6: Removed Ollama/alt-text/people fields; simplified to core image processing.
+v1.5: Wide window, drag-to-reorder, per-image quality override.
+v1.4: Crop callback pattern fix; thumbnail updates on crop confirm.
+v1.2: Images copied into memory on load; WebP RGBA fix.
 """
 
 import io
@@ -68,16 +57,6 @@ try:
 except ImportError:
     print("Pillow is required.  Run:  pip install Pillow")
     sys.exit(1)
-
-# ---------------------------------------------------------------------------
-# Optional Anthropic
-# ---------------------------------------------------------------------------
-
-try:
-    import anthropic as _anthropic_lib
-    _ANTHROPIC_AVAILABLE = True
-except ImportError:
-    _ANTHROPIC_AVAILABLE = False
 
 # ---------------------------------------------------------------------------
 # Helpers

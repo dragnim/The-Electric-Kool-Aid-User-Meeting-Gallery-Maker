@@ -2,19 +2,34 @@
 
 A free, local, privacy-respecting Windows desktop app for processing photos from software user meetings into web-ready 1080×1080 images.
 
+## Should I use this?
+
+Use this if you need to turn a small set of event or user meeting photos into consistent square images for a website gallery. It is designed for batches of up to 20 images, with manual crop control, file-size checks, consistent filenames, and photographer credit text ready to paste into a media gallery upload form.
+
+It does not edit your original images. It does not upload anything. It does not generate alt text. It only processes images in the selected folder, up to 20 at a time.
+
+## What it creates
+
+| Item | Where it goes | Purpose |
+|------|--------------|---------|
+| 1080×1080 WebP or JPEG images | `processed/` folder | Web-ready gallery images |
+| `image-credits.txt` | `processed/` folder | Copy/paste credit text for uploads |
+| `.umip_settings.json` | User home folder | Remembers your last settings |
+
 ## What it does
 
 - Loads up to 20 photos from a folder
 - Lets you adjust the crop point per image (drag to reposition, scroll to resize)
 - Drag-and-drop reordering of images before export
 - Exports all images as 1080×1080 WebP or JPEG, compressed to a target file size
+- Pauses if any image exceeds the file size warning threshold and lets you adjust quality for that image individually
 - Generates an `image-credits.txt` with filenames and photographer credits
 - Filenames follow the convention `user-meeting-image_{meeting-slug}_{index}.webp`, e.g. `user-meeting-image_techconf-25_007.webp`
 
 ## Requirements
 
 - Windows 10 or 11
-- Python 3.12 or later — download from [python.org](https://python.org) (tick "Add Python to PATH" during install)
+- Python 3.12 or 3.13 — download from [python.org](https://python.org) (tick "Add Python to PATH" during install)
 - [Pillow](https://python-pillow.org/) — installed automatically by `launch.bat`
 
 ## Running the app
