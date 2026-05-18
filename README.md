@@ -49,18 +49,21 @@ If a processed image exceeds the warning threshold, the app pauses and lets you 
 
 ## Folder structure
 
+The app files can live anywhere. Your photos can also be anywhere — you just browse to them when you run the app. Processed images are saved into a `processed/` subfolder inside whichever folder you select.
+
 ```
-your-project/
+anywhere-on-your-pc/
 ├── the-electric-kool-aid-user-meeting-gallery-maker.py   ← main app
 ├── launch.bat                                             ← Windows launcher
-├── requirements.txt
-└── your-photos/
-    ├── photo1.jpg
-    ├── photo2.jpg
-    └── processed/                                         ← output folder
-        ├── user-meeting-image_techconf-25_001.webp
-        ├── user-meeting-image_techconf-25_002.webp
-        └── image-credits.txt
+└── requirements.txt
+
+your-photos/                                               ← wherever your photos are
+├── photo1.jpg
+├── photo2.jpg
+└── processed/                                             ← created automatically
+    ├── user-meeting-image_techconf-25_001.webp
+    ├── user-meeting-image_techconf-25_002.webp
+    └── image-credits.txt
 ```
 
 ## Settings
