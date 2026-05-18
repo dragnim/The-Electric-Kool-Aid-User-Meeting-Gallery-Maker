@@ -9,7 +9,7 @@ A free, local, privacy-respecting Windows desktop app for processing photos from
 - Drag-and-drop reordering of images before export
 - Exports all images as 1080×1080 WebP or JPEG, compressed to a target file size
 - Generates an `image-credits.txt` with filenames and photographer credits
-- Filenames follow the convention `user-meeting-image_{meeting-slug}_{index}.webp`, e.g. `user-meeting-image_spring-conf-25_007.webp`
+- Filenames follow the convention `user-meeting-image_{meeting-slug}_{index}.webp`, e.g. `user-meeting-image_techconf-25_007.webp`
 
 ## Requirements
 
@@ -32,10 +32,10 @@ py the-electric-kool-aid-user-meeting-gallery-maker.py
 All processed images are saved into a `processed/` subfolder inside your chosen input folder, alongside an `image-credits.txt` file:
 
 ```
-user-meeting-image_spring-conf-25_001.webp
+user-meeting-image_techconf-25_001.webp
 -- Copy the lines below into the Licensing Information field when uploading --
-Taken by Johanna Hsu
-Last updated: 18/05/2026
+Taken by Jane Smith
+Last updated: DD/MM/YYYY
 ```
 
 ## File size guidance
@@ -58,8 +58,8 @@ your-project/
     ├── photo1.jpg
     ├── photo2.jpg
     └── processed/                                         ← output folder
-        ├── user-meeting-image_spring-conf-25_001.webp
-        ├── user-meeting-image_spring-conf-25_002.webp
+        ├── user-meeting-image_techconf-25_001.webp
+        ├── user-meeting-image_techconf-25_002.webp
         └── image-credits.txt
 ```
 
