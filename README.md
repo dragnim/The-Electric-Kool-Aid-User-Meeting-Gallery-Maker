@@ -1,6 +1,6 @@
 # The Electric Kool-Aid User Meeting Gallery Maker
 
-A free, local, privacy-respecting Windows desktop app for processing photos from Dyalog user meetings into web-ready 1080×1080 images.
+A free, local, privacy-respecting Windows desktop app for processing photos from software user meetings into web-ready 1080×1080 images.
 
 ## What it does
 
