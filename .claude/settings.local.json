@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(curl -s \"https://raw.githubusercontent.com/dragnim/The-Electric-Kool-Aid-Background-Remover/main/the-electric-kool-aid-background-remover.py\")"
+    ]
+  }
+}
