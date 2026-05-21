@@ -52,6 +52,124 @@ HERO_THUMB     = 200
 
 IMG_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".tif", ".tiff", ".bmp"}
 
+# ---------------------------------------------------------------------------
+# Window icon — lemon from Twemoji, CC BY 4.0, packaged via favicon.io
+# ---------------------------------------------------------------------------
+
+LEMON_ICO_B64 = (
+    "AAABAAMAEBAAAAEAIABoBAAANgAAACAgAAABACAAKBEAAJ4EAAAwMAAAAQAgAGgmAADGFQAA"
+    "KAAAABAAAAAgAAAAAQAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAE3M/wpMzP9oTcv/t03M/+FMzP/tTcz/4EzM/8JNy/+ZTMv/oVDP/yAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAEzL/0BNzP/hTcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M"
+    "//9Oyv9IAAAAAAAAAAAAAAAAAAAAAEzN/1dMzP/6Tcz//03M//9NzP//Tcz//03M//9NzP//"
+    "Tcz//03M//9NzP//Tcr/dAAAAAAAAAAAAAAAAEzJ/zlMzP/6Tcz//03M//9NzP//Tcz//03M"
+    "//9NzP//Tcz//03M//9NzP//Tcz//0zN/8VSuHoZUrZ2HAD//wFNzf/QTcz//03M//9NzP//"
+    "Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9Ny//yVLN1RlWyd81NyfNCTcz//03M"
+    "//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//1WyeGBVsnf/"
+    "Ubyt5U3M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03N"
+    "//RVsnecVbJ3/1WyeP9PxuD/Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//"
+    "Tcz//03M//9MzP/MVbJ3zVWyd/9Vsnf/U7mc/03M//9NzP//Tcz//03M//9NzP//Tcz//03M"
+    "//9NzP//Tcz//03M//9NzP//Tcv/hVWyd9JVsnf/VbJ3/1Wyef9Nyvj/Tcz//03M//9NzP//"
+    "Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz/+UjH/yBUsnabVbJ3/1Wyd/9Vsnf/Tsfm/03M"
+    "//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//07M/30AAAAAV7V5JlWyd/VVsnf/"
+    "VbJ3/07H5f9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M/5sAgP8CAAAAAAAA"
+    "AABStHhEVbJ33lWzff9Ny/n/Tcz//03M//9NzP//Tcz//03M//9NzP//Tcv/6EzM/2QAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAFOxdjRVsXffRJ1p+T+egP9Drar/RrXA/0a2w/9EsLP/Qq2qpUC/"
+    "/wgAAAAAAAAAAAAAAAAAAAAAU7J3VlWzd65VsnfQVbN0OTuRWkE7kVuUOpFbqzyRXJ47kVx0"
+    "PJFbWjqRW20AAAAAAAAAAAAAAAAAAAAAAAAAAFSyd3pStHhEAICAAgAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKAAAACAA"
+    "AABAAAAAAQAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEDU/wxNzP9QTMv/jUzL"
+    "/7VNzP/RTMz/3E3N/9pNzP/NTcv/t03L/5lNy/9wTsz/QUrJ/yZMzP88Tcv/SWbM/wUAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE3M"
+    "/yhNzP+fTcz/9E3M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//"
+    "Tcz//03M//9NzP//Tc3/ewAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAFXG/wlMzP+MTsz/+k3M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//"
+    "Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9Ny/+eAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABMyP8lTsz/0k3M//9NzP//Tcz//03M//9NzP//"
+    "Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M"
+    "/4EAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATMv/Nk3L/+xNzP//"
+    "Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M"
+    "//9NzP//Tcz//03M//9NzP//Tsz/tAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAEzQ/zZNzP/xTcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M"
+    "//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP/9TMz/HgAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAABKzv8fTcz/6k3M//9NzP//Tcz//03M//9NzP//Tcz//03M"
+    "//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//"
+    "Tcz//03M//9Mzf9sAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAID/AkzM/8JNzP//Tcz//03M"
+    "//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//"
+    "Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//0zM/6oAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AABLy/9jTcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//"
+    "Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz/1gAA"
+    "AABSsnVmVbF3cgAAAAAAAAAAM8z/BU3N/+BNzP//Tcz//03M//9NzP//Tcz//03M//9NzP//"
+    "Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M"
+    "//9NzP//Tcz//03M//9Nzf/zAAAAAFWzd41Vsnf+U7N2UAAAAABNzP9QTcz//03M//9NzP//"
+    "Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M"
+    "//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//8AAAAAVbF2ilWyd/9Vsnfn"
+    "WbNzFE3L/6NNzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M"
+    "//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//"
+    "Tcz//wAAAABUsXamVbJ3/1Wyd/9UsnizTcv+4k3M//9NzP//Tcz//03M//9NzP//Tcz//03M"
+    "//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//"
+    "Tcz//03M//9NzP//Tcz//03M//9MzP/3AAAAAFWyd9pVsnf/VbJ3/1Wyd/9QwMH/Tcz//03M"
+    "//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//"
+    "Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M/91Vs3sbVbJ2/lWy"
+    "d/9Vsnf/VbJ3/1Wze/9Ox+n/Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//"
+    "Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M"
+    "//9NzP//TMv/tVS0d1hVsnf/VbJ3/1Wyd/9Vsnf/VbJ3/1O5m/9NzP//Tcz//03M//9NzP//"
+    "Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M"
+    "//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP9+VLJ3i1Wyd/9Vsnf/VbJ3/1Wyd/9Vsnf/"
+    "VbJ3/0/F3f9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M"
+    "//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//0rM/zdWs3iq"
+    "VbJ3/1Wyd/9Vsnf/VbJ3/1Wyd/9Vsnf/Urul/03M//9NzP//Tcz//03M//9NzP//Tcz//03M"
+    "//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//"
+    "Tcz//03M//9MzP/cAP//AVWzeLFVsnf/VbJ3/1Wyd/9Vsnf/VbJ3/1Wyd/9Us37/Tcv8/03M"
+    "//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//"
+    "Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//0vM/3MAAAAAVLN3mlWyd/9Vsnf/VbJ3/1Wy"
+    "d/9Vsnf/VbJ3/1Wyd/9Ox+b/Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//"
+    "Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9MzP/mQL//DAAA"
+    "AABVsnZjVbJ3/1Wyd/9Vsnf/VbJ3/1Wyd/9Vsnf/VbJ3/1DE0/9NzP//Tcz//03M//9NzP//"
+    "Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M"
+    "//9NzP//Tcz//0zN/1cAAAAAAAAAAE2zcxRVsXf2VbJ3/1Wyd/9Vsnf/VbJ3/1Wyd/9Vsnf/"
+    "UMHJ/03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M"
+    "//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP+fAAAAAAAAAAAAAAAAAAAAAFWxdo1Vsnf/"
+    "VbJ3/1Wyd/9Vsnf/VbJ3/1Wyd/9Qwcf/Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M"
+    "//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz/ukm2/wcAAAAA"
+    "AAAAAAAAAAAAAAAATrF2DVWzd9lVsnf/VbJ3/1Wyd/9Vsnf/VbJ3/1DD0f9NzP//Tcz//03M"
+    "//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//"
+    "Tcz//03N/6w5xv8JAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUK91I1Wydt5Vsnf/VbJ3/1Wy"
+    "d/9Vsnf/Tsjt/03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//"
+    "Tcz//03M//9NzP//Tcz//03M//9NzP//hMzf91AP//AQAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAABS7R4EVayd45Vs3ftVbJ3/1S2jv9Ny/v/Tcz//03M//9NzP//Tcz//03M//"
+    "9NzP//Tcz//03M//9NzP//Tcz//03M//9NzP//Tcz//03L//xNzP+mTs3/JAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABC/gARUsXaXVb"
+    "J3/1Owd/9Am3D/QKKK/0W0vv9Kw+j/Tcz+/03M//9NzP//Tcz//03M//9NzP//TMr6/0rC5e"
+    "tMzP95SMf/IAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAABSrXYcVbJ3sFWyd/9VsnfnQZdh6TuRXP87kVz/O5Fc/zuRXP88lGb/Ppx7/0Chi"
+    "P9Aoov/QJ+F/z6adP87kmD/O5Fb+zmSWjYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAABTsncrVLJ4kVWyd/VVsnf/VbJ2xFWydx46kFs1O5Fc0DuR"
+    "XP87kVz/O5Fc/zuRXP87kVz/O5Fc/zuRXPk7kVzQO5BcsTqSW7g7kVzvOpFcrAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABUsXiAVLJ22lWyd/"
+    "9Vsnf/VbJ35VazdmhVqlUDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN5BZFzuSXD06kltUOZJc"
+    "WTyQW0w9kFkuJJJJBwAAAAAAAAAAAAAAACqAVQY9kmEVAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAFSxd+NVsnfzVbN3tFSzdltJtm0HAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARrl0C1WqgAYAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    "AAAAAAAAAAAAAAAAAAAAAA=="
+)
+
 
 # ---------------------------------------------------------------------------
 # Pillow
@@ -532,12 +650,41 @@ class App(tk.Tk):
         self._hero_crop_box                = None
         self._hero_last_output: Path | None = None
 
+        self._set_icon()
         self._build_ui()
         self._load_settings_into_ui()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
 
     def _on_close(self):
         self.destroy()
+
+    def _set_icon(self):
+        """Set the window icon from the embedded ICO via a temp file.
+
+        Windows needs an actual .ico file path for iconbitmap() to produce a
+        good title-bar AND taskbar icon (iconphoto with a PNG sets only the
+        title bar, and even that renders poorly at small sizes when the
+        source PNG has heavy alpha). The .ico contains the canonical
+        multi-resolution Windows icon, so we just write it to disk once and
+        point Tk at the file.
+        """
+        try:
+            import base64
+            import tempfile
+            import atexit
+            ico_bytes = base64.b64decode(LEMON_ICO_B64)
+            fd, path = tempfile.mkstemp(suffix=".ico", prefix="kagm_")
+            try:
+                with os.fdopen(fd, "wb") as f:
+                    f.write(ico_bytes)
+            except Exception:
+                os.close(fd)
+                raise
+            self._icon_path = path
+            atexit.register(lambda p=path: os.path.exists(p) and os.remove(p))
+            self.iconbitmap(default=path)
+        except Exception:
+            pass
 
     # ── UI ────────────────────────────────────────────────────────────────────
 

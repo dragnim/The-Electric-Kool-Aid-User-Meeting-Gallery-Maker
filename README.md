@@ -137,6 +137,13 @@ User preferences are saved to `~/.umip_settings.json`. This file is specific to 
 
 Persisted settings: last folder, meeting name, photographer, your name, format, quality, hero event name, hero format, hero quality.
 
+## Credits
+
+Window icon: lemon graphic from [Twemoji](https://github.com/twitter/twemoji),
+copyright 2020 Twitter Inc. and other contributors, licensed under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Packaged into a
+multi-resolution `.ico` via [favicon.io](https://favicon.io/emoji-favicons/lemon/).
+
 ## Licence
 
 MIT — see [LICENSE](LICENSE).
