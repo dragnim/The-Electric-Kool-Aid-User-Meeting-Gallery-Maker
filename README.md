@@ -1,30 +1,52 @@
 # The Electric Kool-Aid User Meeting Gallery Maker
 
-A free, local, privacy-respecting Windows desktop app for processing photos from software user meetings into web-ready 1080×1080 images.
+A free, local, privacy-respecting Windows desktop app for processing photos from software user meetings into web-ready 1080×1080 images. Two independent tabs — use whichever you need, whenever you need it.
 
 ## Should I use this?
 
-Use this if you need to turn a small set of event or user meeting photos into consistent square images for a website gallery. It is designed for batches of up to 20 images, with manual crop control, file-size checks, consistent filenames, and photographer credit text ready to paste into a media gallery upload form.
+Use this if you need to turn a small set of event or user meeting photos into consistent square images for a website gallery, or to produce a single hero image for an event page. It is designed for batches of up to 20 images, with manual crop control, file-size checks, consistent filenames, and credit text ready to paste into a media gallery upload form.
 
 It does not edit your original images. It does not upload anything. It does not generate alt text. It only processes images in the selected folder, up to 20 at a time.
 
-## What it creates
+## Two tabs, two workflows
+
+### Gallery tab
+
+Process a batch of up to 20 photos into consistently named gallery images.
 
 | Item | Where it goes | Purpose |
 |------|--------------|---------|
 | 1080×1080 WebP or JPEG images | `processed/` folder | Web-ready gallery images |
 | `image-credits.txt` | `processed/` folder | Copy/paste credit text for uploads |
-| `.umip_settings.json` | User home folder | Remembers your last settings |
+
+### Hero Image tab
+
+Process a single image into a hero image for an event page.
+
+| Item | Where it goes | Purpose |
+|------|--------------|---------|
+| 1080×1080 WebP or JPEG image | Same folder as source | Web-ready hero image |
+| `heroImg_…_01.txt` | Same folder as source | Copy/paste licence/source text for uploads |
 
 ## What it does
 
+### Gallery tab
 - Loads up to 20 photos from a folder
-- Lets you adjust the crop point per image (drag to reposition, scroll to resize)
+- Lets you adjust the crop per image (drag to reposition, scroll to resize)
 - Drag-and-drop reordering of images before export
 - Exports all images as 1080×1080 WebP or JPEG, compressed to a target file size
-- Pauses if any image exceeds the file size warning threshold and lets you adjust quality for that image individually
-- Generates an `image-credits.txt` with filenames and photographer credits
-- Filenames follow the convention `user-meeting-image_{meeting-slug}_{index}.webp`, e.g. `user-meeting-image_techconf-25_007.webp`
+- Pauses if any image exceeds the file size warning threshold and lets you adjust quality individually
+- Generates an `image-credits.txt` with filenames, photographer credits, and last-updated-by info
+- Filenames: `user-meeting-image_{meeting-slug}_{index}.webp`, e.g. `user-meeting-image_spring-conf-25_007.webp`
+
+### Hero Image tab
+- Pick a single source image
+- Adjust crop with the same crop tool as the gallery
+- Enter the source URL and licence information (free text)
+- Exports a 1080×1080 WebP or JPEG with auto-incremented filename
+- Generates a matching `.txt` credits file with your source/licence text and a "Last updated by" line
+- Filename: `heroImg_user-meeting_{event-slug}_{index}.webp`, e.g. `heroImg_user-meeting_spring-conf-25_01.webp`
+- If a file with the same name already exists, the index increments automatically (`_01`, `_02`, …)
 
 ## Requirements
 
@@ -42,15 +64,36 @@ Or run directly:
 py the-electric-kool-aid-user-meeting-gallery-maker.py
 ```
 
-## Output
+## Output examples
 
-All processed images are saved into a `processed/` subfolder inside your chosen input folder, alongside an `image-credits.txt` file:
+### Gallery credits (`image-credits.txt`)
 
 ```
-user-meeting-image_techconf-25_001.webp
+user-meeting-image_spring-conf-25_001.webp
 -- Copy the lines below into the Licensing Information field when uploading --
 Taken by Jane Smith
-Last updated: DD/MM/YYYY
+Last updated by MikeM - 21/05/2026
+
+user-meeting-image_spring-conf-25_002.webp
+-- Copy the lines below into the Licensing Information field when uploading --
+Taken by Alex Jones
+Last updated by MikeM - 21/05/2026
+```
+
+### Hero credits (`heroImg_user-meeting_spring-conf-25_01.txt`)
+
+```
+From Envato, used under our subscription (https://elements.envato.com/stock-market-graph-EFMLMBC).
+
+Last updated by MikeM - 21/05/2026
+```
+
+Or for a free-licence source:
+
+```
+Downloaded from unsplash.com: https://unsplash.com/photos/... Free to use under the Unsplash licence: https://unsplash.com/license
+
+Last updated by MikeM - 21/05/2026
 ```
 
 ## File size guidance
@@ -60,11 +103,13 @@ Last updated: DD/MM/YYYY
 | Aim for | < 160 KB |
 | Warning | > 220 KB |
 
-If a processed image exceeds the warning threshold, the app pauses and lets you lower the quality for that image before continuing.
+If a processed image exceeds the warning threshold, the app pauses and lets you lower the quality for that image before continuing. Applies to both gallery and hero processing.
+
+## Your name field
+
+Both tabs include a "Your name" field. Enter your name once and it will be remembered. It is used in credits as `Last updated by [name] - [date]`. You add the name in the tool; recipients paste the generated text into WordPress (or wherever) when uploading.
 
 ## Folder structure
-
-The app files can live anywhere. Your photos can also be anywhere — you just browse to them when you run the app. Processed images are saved into a `processed/` subfolder inside whichever folder you select.
 
 ```
 anywhere-on-your-pc/
@@ -72,18 +117,25 @@ anywhere-on-your-pc/
 ├── launch.bat                                             ← Windows launcher
 └── requirements.txt
 
-your-photos/                                               ← wherever your photos are
+your-gallery-photos/                                       ← wherever your photos are
 ├── photo1.jpg
 ├── photo2.jpg
 └── processed/                                             ← created automatically
-    ├── user-meeting-image_techconf-25_001.webp
-    ├── user-meeting-image_techconf-25_002.webp
+    ├── user-meeting-image_spring-conf-25_001.webp
+    ├── user-meeting-image_spring-conf-25_002.webp
     └── image-credits.txt
+
+your-hero-source/                                          ← wherever the hero source is
+├── hero-source.jpg
+├── heroImg_user-meeting_spring-conf-25_01.webp            ← saved here automatically
+└── heroImg_user-meeting_spring-conf-25_01.txt
 ```
 
 ## Settings
 
-User preferences (last folder, meeting name, photographer, format, quality) are saved to `~/.umip_settings.json`. This file is specific to your machine and should not be committed to version control — it is listed in `.gitignore`.
+User preferences are saved to `~/.umip_settings.json`. This file is specific to your machine and should not be committed to version control — it is listed in `.gitignore`.
+
+Persisted settings: last folder, meeting name, photographer, your name, format, quality, hero event name, hero format, hero quality.
 
 ## Licence
 

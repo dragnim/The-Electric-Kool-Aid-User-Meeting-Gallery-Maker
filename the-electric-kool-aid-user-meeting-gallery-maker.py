@@ -1,15 +1,19 @@
 """
-The Electric Kool-Aid User Meeting Gallery Maker  (v2.6)
+The Electric Kool-Aid User Meeting Gallery Maker  (v3.0)
 =========================================================
 
-Crops, resizes and compresses up to 20 meeting photos to 1080x1080 px,
+Gallery tab: crops, resizes and compresses up to 20 meeting photos to 1080x1080 px,
 then writes an image-credits.txt with photographer credits.
+
+Hero Image tab: processes a single image into a 1080x1080 hero image with
+source/licence credits, saved alongside the source file.
 
 Usage:
     py the-electric-kool-aid-user-meeting-gallery-maker.py
 
 Requires Python 3.12 or 3.13.  Only hard dependency beyond stdlib is Pillow.
 
+v3.0: Hero Image tab; Your Name field; updated credits format.
 v2.6: Removed Ollama/alt-text/people fields; simplified to core image processing.
 v1.5: Wide window, drag-to-reorder, per-image quality override.
 v1.4: Crop callback pattern fix; thumbnail updates on crop confirm.
@@ -33,9 +37,9 @@ from tkinter import ttk
 # Constants
 # ---------------------------------------------------------------------------
 
-__version__    = "2.6"
+__version__    = "3.0"
 APP_TITLE      = f"The Electric Kool-Aid User Meeting Gallery Maker  v{__version__}"
-WINDOW_SIZE    = "1200x820"
+WINDOW_SIZE    = "1200x860"
 GRID_COLS      = 7
 
 SETTINGS_PATH  = Path.home() / ".umip_settings.json"
@@ -44,6 +48,7 @@ OUTPUT_SIZE    = (1080, 1080)
 MAX_IMAGES     = 20
 TARGET_SIZE_KB = 160
 WARN_SIZE_KB   = 220
+HERO_THUMB     = 200
 
 IMG_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".tif", ".tiff", ".bmp"}
 
@@ -80,13 +85,26 @@ def _save_settings(patch: dict):
 
 def slugify(text: str) -> str:
     text = text.lower().strip()
-    text = text.replace("\u2019", "").replace("'", "")
+    text = text.replace("’", "").replace("'", "")
     text = re.sub(r"[^a-z0-9]+", "-", text)
     return text.strip("-")
 
 
 def make_filename(slug: str, index: int, ext: str) -> str:
     return f"user-meeting-image_{slug}_{index:03d}{ext}"
+
+
+def make_hero_filename(slug: str, index: int, ext: str) -> str:
+    return f"heroImg_user-meeting_{slug}_{index:02d}{ext}"
+
+
+def find_next_hero_path(folder: Path, slug: str, ext: str) -> Path:
+    idx = 1
+    while True:
+        path = folder / make_hero_filename(slug, idx, ext)
+        if not path.exists():
+            return path
+        idx += 1
 
 
 def fix_exif_orientation(img: Image.Image) -> Image.Image:
@@ -125,7 +143,7 @@ def default_crop_box(img: Image.Image):
     return (w // 2 - half, h // 2 - half, w // 2 + half, h // 2 + half)
 
 
-def save_image(img: Image.Image, path: Path, fmt: str, quality: int):
+def save_image(img: Image.Image, path, fmt: str, quality: int):
     """Save img to path in fmt at quality. Always converts to RGB first."""
     rgb = img.convert("RGB")
     if fmt == "WEBP":
@@ -140,8 +158,6 @@ def estimate_kb(img: Image.Image, fmt: str, quality: int) -> int:
     return len(buf.getvalue()) // 1024
 
 
-
-
 # ---------------------------------------------------------------------------
 # Crop popup
 # ---------------------------------------------------------------------------
@@ -152,18 +168,20 @@ class CropPopup(tk.Toplevel):
     Drag to reposition • scroll-wheel / buttons to resize.
     Calls on_confirm((l, t, r, b)) before destroying itself.
     Pass existing_box to restore a previously confirmed crop on re-open.
+    index may be an int (gallery) or a string label (hero).
     """
     CANVAS_W = 620
     CANVAS_H = 520
 
-    def __init__(self, parent, img: Image.Image, index: int,
+    def __init__(self, parent, img: Image.Image, index,
                  on_confirm=None, existing_box=None):
         super().__init__(parent)
-        self.title(f"Adjust crop -- image {index:03d}")
+        label = f"image {index:03d}" if isinstance(index, int) else str(index)
+        self.title(f"Adjust crop -- {label}")
         self.resizable(False, False)
         self.grab_set()
         self._on_confirm  = on_confirm
-        self._result_box  = [None]   # mutable; survives widget teardown
+        self._result_box  = [None]
         self._orig        = img
         ow, oh            = img.size
         self._min_half    = min(ow, oh) * 0.05
@@ -241,13 +259,11 @@ class CropPopup(tk.Toplevel):
         ex = ox + (self._cx + self._half) * scale
         ey = oy + (self._cy + self._half) * scale
 
-        # Dim outside — drawn before the border so border is always on top
         for coords in [(0, 0, cw, sy), (0, ey, cw, ch),
                        (0, sy, sx, ey), (ex, sy, cw, ey)]:
             self._canvas.create_rectangle(*coords, fill="#000000",
                                            stipple="gray50", outline="")
 
-        # Crop border — drawn last, always on top
         self._canvas.create_rectangle(sx, sy, ex, ey, outline="white", width=2)
         for t in (1/3, 2/3):
             self._canvas.create_line(sx + (ex-sx)*t, sy, sx + (ex-sx)*t, ey,
@@ -255,7 +271,7 @@ class CropPopup(tk.Toplevel):
             self._canvas.create_line(sx, sy + (ey-sy)*t, ex, sy + (ey-sy)*t,
                                       fill="white", stipple="gray50")
 
-        self._scale   = scale
+        self._scale    = scale
         self._ox, self._oy = ox, oy
         side = int(self._half * 2)
         self._size_lbl.configure(
@@ -297,7 +313,6 @@ class CropPopup(tk.Toplevel):
                max(0, int(self._cy - self._half)),
                min(ow, int(self._cx + self._half)),
                min(oh, int(self._cy + self._half)))
-        # Call callback and store BEFORE destroy() wipes the widget
         if self._on_confirm:
             self._on_confirm(box)
         self._result_box[0] = box
@@ -325,7 +340,7 @@ class QualityOverrideDialog(tk.Toplevel):
         self._fmt     = fmt
         self._img     = img
         self._event   = event
-        self._result  = result   # result["quality"] written before event.set()
+        self._result  = result
         self._initial = initial_quality
 
         pad = {"padx": 12, "pady": 6}
@@ -349,8 +364,7 @@ class QualityOverrideDialog(tk.Toplevel):
 
         ttk.Button(q_row, text="Estimate size",
                    command=self._estimate).pack(side="left", padx=8)
-        self._est_lbl = ttk.Label(q_row, text="", foreground="gray50",
-                                   font=("", 9))
+        self._est_lbl = ttk.Label(q_row, text="", foreground="gray50", font=("", 9))
         self._est_lbl.pack(side="left")
 
         btn_row = ttk.Frame(self)
@@ -382,7 +396,7 @@ class QualityOverrideDialog(tk.Toplevel):
 
 
 # ---------------------------------------------------------------------------
-# Image card
+# Image card (gallery tab)
 # ---------------------------------------------------------------------------
 
 THUMB_SIZE = 130
@@ -402,7 +416,6 @@ class ImageCard(ttk.Frame):
             raw.load()
             self._orig = fix_exif_orientation(raw).copy()
 
-        # ── drag handle ──────────────────────────────────────────────────────
         handle = ttk.Label(self, text="⠿  drag to reorder",
                            foreground="gray60", font=("", 7), cursor="fleur")
         handle.pack(fill="x", padx=4, pady=(3, 0))
@@ -410,7 +423,6 @@ class ImageCard(ttk.Frame):
         handle.bind("<B1-Motion>",        self._drag_motion)
         handle.bind("<ButtonRelease-1>",  self._drag_end)
 
-        # ── thumbnail ────────────────────────────────────────────────────────
         thumb = self._orig.copy()
         thumb.thumbnail((THUMB_SIZE, THUMB_SIZE), Image.LANCZOS)
         self._tkthumb = ImageTk.PhotoImage(thumb)
@@ -423,7 +435,6 @@ class ImageCard(ttk.Frame):
         self._canvas.pack(padx=6, pady=(2, 2))
         self._canvas.bind("<Button-1>", self._open_crop)
 
-        # ── labels / button ──────────────────────────────────────────────────
         self._idx_var  = tk.StringVar(value=f"#{index:03d}")
         ttk.Label(self, textvariable=self._idx_var,
                   font=("", 8, "bold")).pack()
@@ -442,8 +453,6 @@ class ImageCard(ttk.Frame):
         self._photo_var = tk.StringVar()
         ttk.Entry(self, textvariable=self._photo_var,
                   width=14, font=("", 8)).pack(pady=(0, 4))
-
-    # ── crop ─────────────────────────────────────────────────────────────────
 
     def _open_crop(self, _event=None):
         def on_confirm(box):
@@ -469,20 +478,15 @@ class ImageCard(ttk.Frame):
             self._canvas.configure(highlightthickness=0)
             self._crop_var.set("default crop")
 
-    # ── drag-to-reorder ───────────────────────────────────────────────────────
-
     def _drag_start(self, e):
         self._drag_x = e.x_root
         self._drag_y = e.y_root
 
     def _drag_motion(self, e):
-        # Ask the app to check if we've moved over a different card
         self._app.drag_over(self, e.x_root, e.y_root)
 
     def _drag_end(self, e):
         self._app.drag_end(self, e.x_root, e.y_root)
-
-    # ── public API ────────────────────────────────────────────────────────────
 
     def set_index(self, n: int):
         self._index = n
@@ -494,7 +498,6 @@ class ImageCard(ttk.Frame):
     def get_photographer(self) -> str:
         per = self._photo_var.get().strip()
         return per if per else self._app.global_photographer_var.get().strip()
-
 
     @property
     def orig(self) -> Image.Image:
@@ -517,17 +520,20 @@ class App(tk.Tk):
         self.geometry(WINDOW_SIZE)
         self.resizable(True, True)
 
-        self._settings            = _load_settings()
+        self._settings               = _load_settings()
         self._cards: list[ImageCard] = []
-        self._cancel_requested    = False
+        self._cancel_requested       = False
         self._last_output_dir: Path | None = None
         self._drag_source: ImageCard | None = None
+        self._job_start              = 0.0
+        self._timer_running          = False
 
-        self._job_start    = 0.0
-        self._timer_running = False
+        self._hero_img: Image.Image | None = None
+        self._hero_crop_box                = None
+        self._hero_last_output: Path | None = None
+
         self._build_ui()
         self._load_settings_into_ui()
-        # Shut down gracefully when the window closes
         self.protocol("WM_DELETE_WINDOW", self._on_close)
 
     def _on_close(self):
@@ -538,8 +544,38 @@ class App(tk.Tk):
     def _build_ui(self):
         pad = {"padx": 10, "pady": 4}
 
-        # Input folder
-        f = ttk.LabelFrame(self, text="Input folder")
+        # Status bar and log live outside the notebook so both tabs share them
+        self._status_var = tk.StringVar(value="Ready.")
+        ttk.Label(self, textvariable=self._status_var,
+                  anchor="w", relief="sunken").pack(side="bottom", fill="x")
+
+        log_lf = ttk.LabelFrame(self, text="Log")
+        log_lf.pack(side="bottom", fill="x", **pad)
+        log_tb = ttk.Frame(log_lf)
+        log_tb.pack(fill="x", padx=5, pady=(3, 0))
+        ttk.Button(log_tb, text="Copy log",
+                   command=self._copy_log, width=12).pack(side="right")
+        self._log_widget = scrolledtext.ScrolledText(
+            log_lf, height=5, font=("Consolas", 9), state="disabled")
+        self._log_widget.pack(fill="x", expand=False, padx=5, pady=4)
+
+        nb = ttk.Notebook(self)
+        nb.pack(fill="both", expand=True, **pad)
+
+        gallery_tab = ttk.Frame(nb)
+        hero_tab    = ttk.Frame(nb)
+        nb.add(gallery_tab, text="  Gallery  ")
+        nb.add(hero_tab,    text="  Hero Image  ")
+
+        self._build_gallery_ui(gallery_tab)
+        self._build_hero_ui(hero_tab)
+
+    # ── Gallery tab ───────────────────────────────────────────────────────────
+
+    def _build_gallery_ui(self, parent):
+        pad = {"padx": 10, "pady": 4}
+
+        f = ttk.LabelFrame(parent, text="Input folder")
         f.pack(fill="x", **pad)
         self._folder_var = tk.StringVar()
         ttk.Entry(f, textvariable=self._folder_var).pack(
@@ -547,8 +583,7 @@ class App(tk.Tk):
         ttk.Button(f, text="Browse...", command=self._browse_folder,
                    width=10).pack(side="right", padx=(0, 5), pady=4)
 
-        # Meeting details + format on one row to save vertical space
-        details_fmt = ttk.Frame(self)
+        details_fmt = ttk.Frame(parent)
         details_fmt.pack(fill="x", **pad)
 
         f = ttk.LabelFrame(details_fmt, text="Meeting details")
@@ -568,12 +603,21 @@ class App(tk.Tk):
         self._meeting_var.trace_add("write", self._on_meeting_change)
 
         row2 = ttk.Frame(f)
-        row2.pack(fill="x", padx=8, pady=(0, 4))
+        row2.pack(fill="x", padx=8, pady=(0, 2))
         ttk.Label(row2, text="Default photographer:").pack(side="left")
         self.global_photographer_var = tk.StringVar()
         ttk.Entry(row2, textvariable=self.global_photographer_var,
                   width=24).pack(side="left", padx=(4, 8))
         ttk.Label(row2, text="(override per image below)",
+                  foreground="gray50", font=("", 9)).pack(side="left")
+
+        row3 = ttk.Frame(f)
+        row3.pack(fill="x", padx=8, pady=(0, 4))
+        ttk.Label(row3, text="Your name:").pack(side="left")
+        self._your_name_var = tk.StringVar()  # shared with hero tab
+        ttk.Entry(row3, textvariable=self._your_name_var,
+                  width=24).pack(side="left", padx=(4, 8))
+        ttk.Label(row3, text="(used in credits: Last updated by…)",
                   foreground="gray50", font=("", 9)).pack(side="left")
 
         f = ttk.LabelFrame(details_fmt, text="Format & quality")
@@ -602,11 +646,8 @@ class App(tk.Tk):
         ttk.Label(q_row, text=f"Aim <{TARGET_SIZE_KB}  Warn >{WARN_SIZE_KB} KB",
                   foreground="gray50", font=("", 8)).pack(side="left", padx=6)
 
-        # Image grid — fixed height canvas with scrollbar so controls below
-        # are always visible regardless of window size.
-        # Height sized for 3 full card rows (~175px each) + padding.
         self._grid_lf = ttk.LabelFrame(
-            self,
+            parent,
             text="Images  —  click thumbnail or 'Adjust crop...' to set crop  "
                  "|  drag the ⠿ handle to reorder")
         self._grid_lf.pack(fill="both", expand=True, **pad)
@@ -638,8 +679,7 @@ class App(tk.Tk):
             foreground="gray50")
         self._placeholder.grid(row=0, column=0, padx=20, pady=20)
 
-        # Buttons + progress — always visible at bottom
-        btn_row = ttk.Frame(self)
+        btn_row = ttk.Frame(parent)
         btn_row.pack(pady=4)
         self._run_btn = ttk.Button(btn_row, text="Process all",
                                     command=self._run, state="disabled")
@@ -652,26 +692,127 @@ class App(tk.Tk):
                                      state="disabled", width=20)
         self._open_btn.pack(side="left", padx=5)
 
-        self._progress = ttk.Progressbar(self, mode="determinate", length=500)
+        self._progress = ttk.Progressbar(parent, mode="determinate", length=500)
         self._progress.pack(pady=(0, 3))
         self._progress.pack_forget()
 
-        # Log
-        log_lf = ttk.LabelFrame(self, text="Log")
-        log_lf.pack(fill="x", expand=False, **pad)
-        log_tb = ttk.Frame(log_lf)
-        log_tb.pack(fill="x", padx=5, pady=(3, 0))
-        ttk.Button(log_tb, text="Copy log",
-                   command=self._copy_log, width=12).pack(side="right")
-        # Fixed height — does not grow when the window is maximised.
-        self._log_widget = scrolledtext.ScrolledText(
-            log_lf, height=5, font=("Consolas", 9), state="disabled")
-        self._log_widget.pack(fill="x", expand=False, padx=5, pady=4)
+    # ── Hero Image tab ────────────────────────────────────────────────────────
 
-        # Status bar
-        self._status_var = tk.StringVar(value="Ready.")
-        ttk.Label(self, textvariable=self._status_var,
-                  anchor="w", relief="sunken").pack(side="bottom", fill="x")
+    def _build_hero_ui(self, parent):
+        pad = {"padx": 10, "pady": 4}
+
+        src_lf = ttk.LabelFrame(parent, text="Source image")
+        src_lf.pack(fill="x", **pad)
+
+        src_row = ttk.Frame(src_lf)
+        src_row.pack(fill="x", padx=8, pady=4)
+        self._hero_file_var = tk.StringVar()
+        ttk.Entry(src_row, textvariable=self._hero_file_var).pack(
+            side="left", fill="x", expand=True, padx=(0, 5))
+        ttk.Button(src_row, text="Browse...",
+                   command=self._browse_hero_file, width=10).pack(side="right")
+
+        thumb_row = ttk.Frame(src_lf)
+        thumb_row.pack(padx=8, pady=(0, 6), anchor="w")
+
+        self._hero_canvas = tk.Canvas(thumb_row, width=HERO_THUMB, height=HERO_THUMB,
+                                       bg="#d9d9d9", highlightthickness=0,
+                                       cursor="hand2")
+        self._hero_canvas.pack(side="left", padx=(0, 8))
+        self._hero_canvas.bind("<Button-1>", self._open_hero_crop)
+
+        crop_col = ttk.Frame(thumb_row)
+        crop_col.pack(side="left", anchor="n")
+        self._hero_crop_var = tk.StringVar(value="no image loaded")
+        ttk.Label(crop_col, textvariable=self._hero_crop_var,
+                  foreground="gray50", font=("", 9)).pack(anchor="w")
+        ttk.Button(crop_col, text="Adjust crop...",
+                   command=self._open_hero_crop).pack(anchor="w", pady=(4, 0))
+
+        details_fmt = ttk.Frame(parent)
+        details_fmt.pack(fill="x", **pad)
+
+        evt_lf = ttk.LabelFrame(details_fmt, text="Event details")
+        evt_lf.pack(side="left", fill="x", expand=True, padx=(0, 5))
+
+        row1 = ttk.Frame(evt_lf)
+        row1.pack(fill="x", padx=8, pady=3)
+        ttk.Label(row1, text="Event name:").pack(side="left")
+        self._hero_meeting_var = tk.StringVar()
+        ttk.Entry(row1, textvariable=self._hero_meeting_var,
+                  width=20).pack(side="left", padx=(4, 12))
+        ttk.Label(row1, text="Slug:", foreground="gray50",
+                  font=("", 9)).pack(side="left")
+        self._hero_slug_var = tk.StringVar(value="")
+        ttk.Label(row1, textvariable=self._hero_slug_var,
+                  foreground="gray50", font=("", 9)).pack(side="left", padx=4)
+        self._hero_meeting_var.trace_add("write", self._on_hero_meeting_change)
+
+        row2 = ttk.Frame(evt_lf)
+        row2.pack(fill="x", padx=8, pady=(0, 4))
+        ttk.Label(row2, text="Your name:").pack(side="left")
+        # Reuses the shared StringVar created in _build_gallery_ui
+        ttk.Entry(row2, textvariable=self._your_name_var,
+                  width=24).pack(side="left", padx=(4, 8))
+        ttk.Label(row2, text="(used in credits: Last updated by…)",
+                  foreground="gray50", font=("", 9)).pack(side="left")
+
+        fmt_lf = ttk.LabelFrame(details_fmt, text="Format & quality")
+        fmt_lf.pack(side="left", fill="y")
+
+        fmt_row = ttk.Frame(fmt_lf)
+        fmt_row.pack(fill="x", padx=8, pady=3)
+        ttk.Label(fmt_row, text="Format:").pack(side="left")
+        self._hero_fmt_var = tk.StringVar(value="WEBP")
+        ttk.Radiobutton(fmt_row, text="WebP",
+                        variable=self._hero_fmt_var, value="WEBP").pack(
+            side="left", padx=(4, 6))
+        ttk.Radiobutton(fmt_row, text="JPEG",
+                        variable=self._hero_fmt_var, value="JPEG").pack(side="left")
+
+        q_row = ttk.Frame(fmt_lf)
+        q_row.pack(fill="x", padx=8, pady=(0, 4))
+        ttk.Label(q_row, text="Quality:").pack(side="left")
+        self._hero_quality_var = tk.IntVar(value=82)
+        ttk.Scale(q_row, from_=40, to=100, variable=self._hero_quality_var,
+                  orient="horizontal", length=120,
+                  command=lambda _: self._hero_quality_lbl.configure(
+                      text=str(self._hero_quality_var.get()))).pack(
+            side="left", padx=(4, 0))
+        self._hero_quality_lbl = ttk.Label(q_row, text="82", width=3)
+        self._hero_quality_lbl.pack(side="left", padx=2)
+        ttk.Label(q_row, text=f"Aim <{TARGET_SIZE_KB}  Warn >{WARN_SIZE_KB} KB",
+                  foreground="gray50", font=("", 8)).pack(side="left", padx=6)
+
+        lic_lf = ttk.LabelFrame(parent, text="Source & licence information")
+        lic_lf.pack(fill="x", **pad)
+
+        ttk.Label(lic_lf,
+                  text="Enter the source URL, licence, and any other credit information:",
+                  foreground="gray50", font=("", 9)).pack(anchor="w", padx=8, pady=(4, 2))
+
+        self._hero_license_text = tk.Text(lic_lf, height=4, font=("Consolas", 9),
+                                           wrap="word")
+        self._hero_license_text.pack(fill="x", padx=8, pady=(0, 2))
+
+        ttk.Label(lic_lf,
+                  text='The line "Last updated by [Your name] - [today\'s date]" '
+                       'will be appended automatically.',
+                  foreground="gray50", font=("", 9)).pack(anchor="w", padx=8, pady=(0, 6))
+
+        hero_btn_row = ttk.Frame(parent)
+        hero_btn_row.pack(pady=4)
+        self._hero_run_btn = ttk.Button(hero_btn_row, text="Process hero image",
+                                         command=self._hero_run, state="disabled")
+        self._hero_run_btn.pack(side="left", padx=5)
+        self._hero_open_btn = ttk.Button(hero_btn_row, text="Open output folder",
+                                          command=self._hero_open_output,
+                                          state="disabled", width=20)
+        self._hero_open_btn.pack(side="left", padx=5)
+
+        self._hero_progress = ttk.Progressbar(parent, mode="indeterminate", length=300)
+        self._hero_progress.pack(pady=(0, 3))
+        self._hero_progress.pack_forget()
 
     # ── settings ──────────────────────────────────────────────────────────────
 
@@ -684,7 +825,14 @@ class App(tk.Tk):
         if v := s.get("quality"):
             self._quality_var.set(v)
             self._quality_lbl.configure(text=str(v))
+        if v := s.get("your_name"):     self._your_name_var.set(v)
+        if v := s.get("hero_meeting"):  self._hero_meeting_var.set(v)
+        if v := s.get("hero_format"):   self._hero_fmt_var.set(v)
+        if v := s.get("hero_quality"):
+            self._hero_quality_var.set(v)
+            self._hero_quality_lbl.configure(text=str(v))
         self._on_meeting_change()
+        self._on_hero_meeting_change()
 
     def _persist_settings(self):
         _save_settings({
@@ -693,6 +841,10 @@ class App(tk.Tk):
             "photographer": self.global_photographer_var.get(),
             "format":       self._fmt_var.get(),
             "quality":      self._quality_var.get(),
+            "your_name":    self._your_name_var.get(),
+            "hero_meeting": self._hero_meeting_var.get(),
+            "hero_format":  self._hero_fmt_var.get(),
+            "hero_quality": self._hero_quality_var.get(),
         })
 
     # ── callbacks ─────────────────────────────────────────────────────────────
@@ -705,8 +857,12 @@ class App(tk.Tk):
     def _on_quality_change(self):
         self._quality_lbl.configure(text=str(self._quality_var.get()))
 
+    def _on_hero_meeting_change(self, *_):
+        raw  = self._hero_meeting_var.get()
+        slug = slugify(raw) if raw.strip() else ""
+        self._hero_slug_var.set(slug or "(enter event name)")
 
-    # ── browse / load ─────────────────────────────────────────────────────────
+    # ── gallery browse / load ─────────────────────────────────────────────────
 
     def _browse_folder(self):
         initial = self._folder_var.get() or str(Path.home())
@@ -758,7 +914,6 @@ class App(tk.Tk):
             self._placeholder.grid_remove()
 
     def _regrid(self):
-        """Place all cards in their current list order into the grid."""
         for card in self._cards:
             card.grid_forget()
         for i, card in enumerate(self._cards):
@@ -779,7 +934,6 @@ class App(tk.Tk):
     # ── drag reorder ──────────────────────────────────────────────────────────
 
     def drag_over(self, source: ImageCard, x_root: int, y_root: int):
-        """Called continuously while dragging; swap cards if hovering over another."""
         target = self._card_under_pointer(x_root, y_root)
         if target is None or target is source:
             return
@@ -789,10 +943,9 @@ class App(tk.Tk):
         self._regrid()
 
     def drag_end(self, source: ImageCard, x_root: int, y_root: int):
-        self._regrid()   # Final tidy
+        self._regrid()
 
     def _card_under_pointer(self, x_root: int, y_root: int):
-        """Return the ImageCard whose bounding box contains (x_root, y_root)."""
         for card in self._cards:
             try:
                 cx = card.winfo_rootx()
@@ -805,7 +958,69 @@ class App(tk.Tk):
                 pass
         return None
 
-    # ── run / cancel ──────────────────────────────────────────────────────────
+    # ── hero browse / load ────────────────────────────────────────────────────
+
+    def _browse_hero_file(self):
+        initial = str(Path(self._hero_file_var.get()).parent) \
+            if self._hero_file_var.get() else str(Path.home())
+        f = filedialog.askopenfilename(
+            initialdir=initial,
+            title="Select hero image",
+            filetypes=[
+                ("Image files", "*.jpg *.jpeg *.png *.webp *.tif *.tiff *.bmp"),
+                ("All files", "*.*"),
+            ])
+        if not f:
+            return
+        self._hero_file_var.set(f)
+        self._load_hero_file(Path(f))
+
+    def _load_hero_file(self, path: Path):
+        try:
+            with Image.open(path) as raw:
+                raw.load()
+                self._hero_img = fix_exif_orientation(raw).copy()
+            self._hero_crop_box = None
+            self._hero_crop_var.set("default crop")
+            self._update_hero_thumb()
+            self._hero_run_btn.configure(state="normal")
+            self._log(f"Hero: loaded {path.name}")
+        except Exception as e:
+            messagebox.showerror("Load error", f"Could not load image:\n{e}")
+            self._hero_img = None
+            self._hero_run_btn.configure(state="disabled")
+
+    def _update_hero_thumb(self):
+        if self._hero_img is None:
+            return
+        box   = self._hero_crop_box if self._hero_crop_box \
+            else default_crop_box(self._hero_img)
+        thumb = self._hero_img.crop(box).copy()
+        thumb.thumbnail((HERO_THUMB, HERO_THUMB), Image.LANCZOS)
+        self._hero_tkthumb = ImageTk.PhotoImage(thumb)
+        self._hero_canvas.delete("all")
+        self._hero_canvas.create_image(HERO_THUMB // 2, HERO_THUMB // 2,
+                                        anchor="center", image=self._hero_tkthumb)
+        if self._hero_crop_box:
+            self._hero_canvas.configure(highlightthickness=3,
+                                         highlightbackground="#008800")
+        else:
+            self._hero_canvas.configure(highlightthickness=0)
+
+    def _open_hero_crop(self, _event=None):
+        if self._hero_img is None:
+            messagebox.showinfo("No image", "Please select an image first.")
+            return
+
+        def on_confirm(box):
+            self._hero_crop_box = box
+            self._hero_crop_var.set("crop adjusted")
+            self._update_hero_thumb()
+
+        CropPopup(self, self._hero_img, "hero image",
+                  on_confirm=on_confirm, existing_box=self._hero_crop_box)
+
+    # ── gallery run / cancel ──────────────────────────────────────────────────
 
     def _run(self):
         if not self._meeting_var.get().strip():
@@ -834,27 +1049,24 @@ class App(tk.Tk):
         self._status("Cancellation requested...")
 
     def _tick_timer(self):
-        """Update status bar with elapsed time every second while processing."""
         if not getattr(self, "_timer_running", False):
             return
         elapsed = int(__import__("time").monotonic() - self._job_start)
         m, s = divmod(elapsed, 60)
-        # Append elapsed to whatever the current status says, or show standalone
         current = self._status_var.get()
-        # Strip old timer suffix if present
         if " (" in current and current.endswith(")"):
             current = current[:current.rfind(" (")]
         self._status_var.set(f"{current} ({m}m {s}s)")
         self.after(1000, self._tick_timer)
 
-    # ── processing ────────────────────────────────────────────────────────────
+    # ── gallery processing ────────────────────────────────────────────────────
 
     def _process_thread(self):
-        slug    = slugify(self._meeting_var.get())
-        fmt     = self._fmt_var.get()
-        quality = self._quality_var.get()
-        meeting_name = self._meeting_var.get().strip()
-        ext          = ".webp" if fmt == "WEBP" else ".jpg"
+        slug      = slugify(self._meeting_var.get())
+        fmt       = self._fmt_var.get()
+        quality   = self._quality_var.get()
+        your_name = self._your_name_var.get().strip() or "Unknown"
+        ext       = ".webp" if fmt == "WEBP" else ".jpg"
 
         folder  = Path(self._folder_var.get())
         out_dir = folder / OUTPUT_FOLDER
@@ -891,14 +1103,13 @@ class App(tk.Tk):
                 kb           = out.stat().st_size // 1024
                 used_quality = quality
 
-                # ── per-image quality override if over warning threshold ──────
                 if kb > WARN_SIZE_KB:
                     self._log(f"[{idx:03d}] {fname}  {kb} KB  [!] over target — pausing...")
                     event  = threading.Event()
                     result = {"quality": quality, "action": "keep"}
                     self.after(0, self._show_quality_dialog,
                                fname, kb, fmt, resized, quality, event, result)
-                    event.wait()   # block until user dismisses dialog
+                    event.wait()
 
                     if result["action"] == "resave":
                         used_quality = result["quality"]
@@ -910,12 +1121,10 @@ class App(tk.Tk):
                 flag = "  [!]" if kb > WARN_SIZE_KB else ""
                 self._log(f"[{idx:03d}] {fname}  {kb} KB{flag}")
 
-                alt = ""
-
-                lines.append(f"{fname}")
+                lines.append(fname)
                 lines.append("-- Copy the lines below into the Licensing Information field when uploading --")
                 lines.append(f"Taken by {photographer or '(not set)'}")
-                lines.append(f"Last updated: {datetime.now():%d/%m/%Y}")
+                lines.append(f"Last updated by {your_name} - {datetime.now():%d/%m/%Y}")
                 lines.append("")
 
             except Exception as e:
@@ -934,7 +1143,6 @@ class App(tk.Tk):
 
     def _show_quality_dialog(self, fname, kb, fmt, img, quality,
                               event: threading.Event, result: dict):
-        """Instantiated on the main thread; processing thread blocks on event."""
         QualityOverrideDialog(self, fname, kb, fmt, img, quality, event, result)
 
     def _on_done(self, errors, out_dir):
@@ -955,6 +1163,98 @@ class App(tk.Tk):
         self.after(0, setattr, self, "_timer_running", False)
         self._status(f"Done in {m}m {s}s.  Output in {out_dir}")
 
+    # ── hero run ──────────────────────────────────────────────────────────────
+
+    def _hero_run(self):
+        if self._hero_img is None:
+            messagebox.showwarning("No image", "Please select an image first.")
+            return
+        if not self._hero_meeting_var.get().strip():
+            messagebox.showwarning("Event name required",
+                                   "Please enter an event name.")
+            return
+        self._persist_settings()
+        self._hero_run_btn.configure(state="disabled")
+        self._hero_open_btn.configure(state="disabled")
+        self.after(0, lambda: self._hero_progress.pack(pady=(0, 3)))
+        self._hero_progress.start(10)
+        threading.Thread(target=self._hero_process_thread, daemon=True).start()
+
+    def _hero_process_thread(self):
+        slug         = slugify(self._hero_meeting_var.get())
+        fmt          = self._hero_fmt_var.get()
+        quality      = self._hero_quality_var.get()
+        your_name    = self._your_name_var.get().strip() or "Unknown"
+        ext          = ".webp" if fmt == "WEBP" else ".jpg"
+        license_text = self._hero_license_text.get("1.0", "end-1c").strip()
+
+        source_path = Path(self._hero_file_var.get())
+        out_folder  = source_path.parent
+        out_path    = find_next_hero_path(out_folder, slug, ext)
+        fname       = out_path.name
+
+        self.after(0, self._status, f"Processing hero image: {fname}...")
+
+        try:
+            box     = self._hero_crop_box if self._hero_crop_box \
+                else default_crop_box(self._hero_img)
+            cropped = self._hero_img.crop(box)
+            resized = cropped.resize(OUTPUT_SIZE, Image.LANCZOS)
+
+            save_image(resized, out_path, fmt, quality)
+            kb           = out_path.stat().st_size // 1024
+            used_quality = quality
+
+            if kb > WARN_SIZE_KB:
+                self._log(f"Hero: {fname}  {kb} KB  [!] over target — pausing...")
+                event  = threading.Event()
+                result = {"quality": quality, "action": "keep"}
+                self.after(0, self._show_quality_dialog,
+                           fname, kb, fmt, resized, quality, event, result)
+                event.wait()
+
+                if result["action"] == "resave":
+                    used_quality = result["quality"]
+                    save_image(resized, out_path, fmt, used_quality)
+                    kb = out_path.stat().st_size // 1024
+                    self._log(f"       re-saved at quality {used_quality}  ->  {kb} KB")
+
+            flag = "  [!]" if kb > WARN_SIZE_KB else ""
+            self._log(f"Hero: {fname}  {kb} KB{flag}")
+
+            date_str      = datetime.now().strftime("%d/%m/%Y")
+            credits_lines = []
+            if license_text:
+                credits_lines.append(license_text)
+                credits_lines.append("")
+            credits_lines.append(f"Last updated by {your_name} - {date_str}")
+
+            credits_path = out_folder / (out_path.stem + ".txt")
+            credits_path.write_text("\n".join(credits_lines), encoding="utf-8")
+            self._log(f"Hero credits: {credits_path}")
+
+            self._hero_last_output = out_folder
+            self.after(0, self._on_hero_done, None, out_path, credits_path)
+
+        except Exception as e:
+            self._log(f"Hero ERROR: {e}")
+            self.after(0, self._on_hero_done, str(e), None, None)
+
+    def _on_hero_done(self, error, out_path, credits_path):
+        self._hero_run_btn.configure(state="normal")
+        self._hero_progress.stop()
+        self._hero_progress.pack_forget()
+        if error:
+            messagebox.showerror("Error", f"Hero image processing failed:\n{error}")
+            self._status("Hero image: error.")
+        else:
+            self._hero_open_btn.configure(state="normal")
+            messagebox.showinfo(
+                "Done",
+                f"Hero image saved:\n{out_path}\n\n"
+                f"Credits:\n{credits_path}")
+            self._status(f"Hero image done.  Saved to {out_path.parent}")
+
     # ── open output ───────────────────────────────────────────────────────────
 
     def _open_output(self):
@@ -962,8 +1262,14 @@ class App(tk.Tk):
             try:
                 os.startfile(self._last_output_dir)
             except AttributeError:
-                import subprocess
                 subprocess.Popen(["xdg-open", str(self._last_output_dir)])
+
+    def _hero_open_output(self):
+        if self._hero_last_output and self._hero_last_output.exists():
+            try:
+                os.startfile(self._hero_last_output)
+            except AttributeError:
+                subprocess.Popen(["xdg-open", str(self._hero_last_output)])
 
     # ── log ───────────────────────────────────────────────────────────────────
 
@@ -998,13 +1304,11 @@ if __name__ == "__main__":
         App().mainloop()
     except Exception:
         err = traceback.format_exc()
-        # Write to a crash log next to the script
         log_path = Path(__file__).parent / "crash-log.txt"
         try:
             log_path.write_text(err, encoding="utf-8")
         except Exception:
             pass
-        # Also try to show a message box
         try:
             import tkinter as _tk
             import tkinter.messagebox as _mb
